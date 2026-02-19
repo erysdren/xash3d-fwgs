@@ -361,3 +361,13 @@ cmake-build-*
 3rdparty/SDL
 3rdparty/hlsdk-portable
 !scripts/build-ninja.py
+
+# erysdren
+/SDL2_VC/
+/ffmpeg/
+/mingw64/
+/SDL2.zip
+/ffmpeg.zip
+/.BUILDINFO
+/.MTREE
+/.PKGINFO
