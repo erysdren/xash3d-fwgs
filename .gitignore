@@ -365,7 +365,7 @@ cmake-build-*
 # erysdren
 /SDL2_VC/
 /ffmpeg/
-/mingw64/
+/pkgconf/
 /SDL2.zip
 /ffmpeg.zip
 /.BUILDINFO
