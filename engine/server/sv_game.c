@@ -113,8 +113,10 @@ void SV_SysError( const char *error_string )
 {
 	Log_Printf( "FATAL ERROR (shutting down): %s\n", error_string );
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	if( svgame.hInstance != NULL )
 		svgame.dllFuncs.pfnSys_Error( error_string );
+#endif
 }
 
 /*
@@ -1844,10 +1846,12 @@ static void GAME_EXPORT pfnMakeStatic( edict_t *ent )
 	if( !SV_IsValidEdict( ent ))
 		return;
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// fill the entity state
 	state = &svs.static_entities[sv.num_static_entities];	// allocate a new one
 	svgame.dllFuncs.pfnCreateBaseline( false, NUM_FOR_EDICT( ent ), state, ent, 0, vec3_origin, vec3_origin );
 	state->messagenum = ent->v.model; // member modelname
+#endif
 
 	if( SV_CreateStaticEntity( &sv.signon, sv.num_static_entities ))
 		sv.num_static_entities++;
@@ -5371,8 +5375,10 @@ qboolean SV_LoadProgs( const char *name )
 
 	Delta_Init ();
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// register custom encoders
 	svgame.dllFuncs.pfnRegisterEncoders();
+#endif
 
 	return true;
 }

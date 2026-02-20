@@ -19,7 +19,9 @@
 #ifdef HLDEMO_BUILD
 #define INTERFACE_VERSION       	001
 #else  // !HLDEMO_BUILD, i.e., regular version of HL
-#define INTERFACE_VERSION		140
+#define INTERFACE_VERSION_NEW	140
+#define INTERFACE_VERSION_OLD	138
+#define INTERFACE_VERSION		INTERFACE_VERSION_NEW
 #endif // !HLDEMO_BUILD
 
 #include <stdio.h>
@@ -455,6 +457,7 @@ typedef struct
 	void	(*pfnSpectatorDisconnect)( edict_t *pEntity );
 	void	(*pfnSpectatorThink)( edict_t *pEntity );
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// Notify game .dll that engine is going to shut down. Allows mod authors to set a breakpoint.
 	void	(*pfnSys_Error)( const char *error_string );
 
@@ -490,6 +493,7 @@ typedef struct
 	// Most games right now should return 0, until client-side weapon prediction code is written
 	//  and tested for them.
 	int	(*pfnAllowLagCompensation)( void );
+#endif
 } DLL_FUNCTIONS;
 
 extern DLL_FUNCTIONS		gEntityInterface;

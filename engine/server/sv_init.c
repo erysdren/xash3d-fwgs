@@ -446,6 +446,69 @@ static void SV_WriteVoiceCodec( sizebuf_t *msg )
 	MSG_WriteByte( msg, (int)sv_voicequality.value );
 }
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_OLD
+static void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, struct edict_s *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs )
+{
+	baseline->origin[0]		= entity->v.origin[0];
+	baseline->origin[1]		= entity->v.origin[1];
+	baseline->origin[2]		= entity->v.origin[2];
+	baseline->angles[0]		= entity->v.angles[0];
+	baseline->angles[1]		= entity->v.angles[1];
+	baseline->angles[2]		= entity->v.angles[2];
+	baseline->frame			= entity->v.frame;
+	baseline->skin			= (short)entity->v.skin;
+
+	// render information
+	baseline->rendermode		= (byte)entity->v.rendermode;
+	baseline->renderamt		= (byte)entity->v.renderamt;
+	baseline->rendercolor.r		= (byte)entity->v.rendercolor[0];
+	baseline->rendercolor.g		= (byte)entity->v.rendercolor[1];
+	baseline->rendercolor.b		= (byte)entity->v.rendercolor[2];
+	baseline->renderfx		= (byte)entity->v.renderfx;
+
+	if( player )
+	{
+		baseline->mins[0]	= player_mins[0];
+		baseline->mins[1]	= player_mins[1];
+		baseline->mins[2]	= player_mins[2];
+
+		baseline->maxs[0]	= player_maxs[0];
+		baseline->maxs[1]	= player_maxs[1];
+		baseline->maxs[2]	= player_maxs[2];
+
+		baseline->colormap	= eindex;
+		baseline->modelindex	= playermodelindex;
+		baseline->friction	= 1.0;
+		baseline->movetype	= MOVETYPE_WALK;
+
+		baseline->scale		= entity->v.scale;
+		baseline->solid		= SOLID_SLIDEBOX;
+		baseline->framerate	= 1.0;
+		baseline->gravity	= 1.0;
+
+	}
+	else
+	{
+		baseline->mins[0]	= entity->v.mins[0];
+		baseline->mins[1]	= entity->v.mins[1];
+		baseline->mins[2]	= entity->v.mins[2];
+
+		baseline->maxs[0]	= entity->v.maxs[0];
+		baseline->maxs[1]	= entity->v.maxs[1];
+		baseline->maxs[2]	= entity->v.maxs[2];
+
+		baseline->colormap	= 0;
+		baseline->modelindex	= entity->v.modelindex;//SV_ModelIndex(pr_strings + entity->v.model);
+		baseline->movetype	= entity->v.movetype;
+
+		baseline->scale		= entity->v.scale;
+		baseline->solid		= entity->v.solid;
+		baseline->framerate	= entity->v.framerate;
+		baseline->gravity	= entity->v.gravity;
+	}
+}
+#endif
+
 /*
 ================
 SV_CreateBaseline
@@ -501,12 +564,18 @@ static void SV_CreateBaseline( void )
 			base->entityType = ENTITY_BEAM;
 		else base->entityType = ENTITY_NORMAL;
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 		svgame.dllFuncs.pfnCreateBaseline( delta_type, entnum, base, pEdict, playermodel, host.player_mins[0], host.player_maxs[0] );
+#else
+		CreateBaseline( delta_type, entnum, base, pEdict, playermodel, host.player_mins[0], host.player_maxs[0] );
+#endif
 		sv.last_valid_baseline = entnum;
 	}
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// create the instanced baselines
 	svgame.dllFuncs.pfnCreateInstancedBaselines();
+#endif
 
 	// now put the baseline into the signon message.
 	MSG_BeginServerCmd( &sv.signon, svc_spawnbaseline );

@@ -3271,6 +3271,7 @@ void SV_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 	}
 	else
 	{
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 		char buf[MAX_SYSPATH];
 		int	len = sizeof( buf );
 
@@ -3280,7 +3281,9 @@ void SV_ConnectionlessPacket( netadr_t from, sizebuf_t *msg )
 			if( len > 0 )
 				Netchan_OutOfBand( NS_SERVER, from, len, (byte*)buf );
 		}
-		else if( sv_log_outofband.value )
+		else
+#endif
+		if( sv_log_outofband.value )
 			Con_DPrintf( S_ERROR "bad connectionless packet from %s:\n%s\n", NET_AdrToString( from ), args );
 	}
 }

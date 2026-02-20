@@ -177,6 +177,7 @@ void SV_ParseConsistencyResponse( sv_client_t *cl, sizebuf_t *msg )
 
 	if( badresindex != 0 )
 	{
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 		char	dropmessage[256];
 
 		dropmessage[0] = 0;
@@ -186,6 +187,7 @@ void SV_ParseConsistencyResponse( sv_client_t *cl, sizebuf_t *msg )
 				SV_ClientPrintf( cl, "%s", dropmessage );
 			SV_DropClient( cl, false );
 		}
+#endif
 	}
 	else
 	{

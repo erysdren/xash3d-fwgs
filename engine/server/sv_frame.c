@@ -88,8 +88,13 @@ static void SV_AddEntitiesToPacket( edict_t *pViewEnt, edict_t *pClient, client_
 		cl->num_viewents = 0;
 	}
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	svgame.dllFuncs.pfnSetupVisibility( pViewEnt, pClient, &clientpvs, &clientphs );
 	if( !clientpvs ) fullvis = true;
+#else
+	// HACK
+	fullvis = true;
+#endif
 
 	// g-cont: of course we can send world but not want to do it :-)
 	for( e = 1; e < svgame.numEntities; e++ )
@@ -563,8 +568,10 @@ static void SV_WriteClientdataToMessage( sv_client_t *cl, sizebuf_t *msg )
 
 	memset( &frame->clientdata, 0, sizeof( frame->clientdata ));
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// update clientdata_t
 	svgame.dllFuncs.pfnUpdateClientData( clent, FBitSet( cl->flags, FCL_LOCAL_WEAPONS ), &frame->clientdata );
+#endif
 
 	MSG_BeginServerCmd( msg, svc_clientdata );
 	if( FBitSet( cl->flags, FCL_HLTV_PROXY )) return;	// don't send more nothing
@@ -586,6 +593,7 @@ static void SV_WriteClientdataToMessage( sv_client_t *cl, sizebuf_t *msg )
 	// write clientdata_t
 	MSG_WriteClientData( msg, from_cd, to_cd, sv.time );
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	if( FBitSet( cl->flags, FCL_LOCAL_WEAPONS ) && svgame.dllFuncs.pfnGetWeaponData( clent, frame->weapondata ))
 	{
 		memset( &nullwd, 0, sizeof( nullwd ));
@@ -599,6 +607,7 @@ static void SV_WriteClientdataToMessage( sv_client_t *cl, sizebuf_t *msg )
 			MSG_WriteWeaponData( msg, from_wd, to_wd, sv.time, i );
 		}
 	}
+#endif
 
 	// end marker
 	MSG_WriteOneBit( msg, 0 );

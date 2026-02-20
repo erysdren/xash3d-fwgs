@@ -139,9 +139,14 @@ static qboolean SV_ShouldUnlagForPlayer( sv_client_t *cl )
 	if( svs.maxclients <= 1 )
 		return false;
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// unlag disabled globally
 	if( !svgame.dllFuncs.pfnAllowLagCompensation() || !sv_unlag.value )
 		return false;
+#else
+	if( !sv_unlag.value )
+		return false;
+#endif
 
 	if( !FBitSet( cl->flags, FCL_LAG_COMPENSATION ))
 		return false;
@@ -449,6 +454,7 @@ void SV_InitClientMove( void )
 	svgame.pmove->movevars = &svgame.movevars;
 	svgame.pmove->runfuncs = false;
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// enumerate client hulls
 	for( i = 0; i < MAX_MAP_HULLS; i++ )
 	{
@@ -457,6 +463,42 @@ void SV_InitClientMove( void )
 			host.player_mins[i][0], host.player_mins[i][1], host.player_mins[i][2],
 			host.player_maxs[i][0], host.player_maxs[i][1], host.player_maxs[i][2] );
 	}
+#else
+	// enumerate client hulls
+	for( i = 0; i < MAX_MAP_HULLS; i++ )
+	{
+		switch( i )
+		{
+			// Normal player
+			case 0:
+				host.player_mins[i][0] = -16;
+				host.player_mins[i][1] = -16;
+				host.player_mins[i][2] = -36;
+				host.player_maxs[i][0] = 16;
+				host.player_maxs[i][1] = 16;
+				host.player_maxs[i][2] = 36;
+				break;
+			// Crouched player
+			case 1:
+				host.player_mins[i][0] = -16;
+				host.player_mins[i][1] = -16;
+				host.player_mins[i][2] = -18;
+				host.player_maxs[i][0] = 16;
+				host.player_maxs[i][1] = 16;
+				host.player_maxs[i][2] = 18;
+				break;
+			// Point based hull
+			case 2:
+				host.player_mins[i][0] = 0;
+				host.player_mins[i][1] = 0;
+				host.player_mins[i][2] = 0;
+				host.player_maxs[i][0] = 0;
+				host.player_maxs[i][1] = 0;
+				host.player_maxs[i][2] = 0;
+				break;
+		}
+	}
+#endif
 
 	memcpy( svgame.pmove->player_mins, host.player_mins, sizeof( host.player_mins ));
 	memcpy( svgame.pmove->player_maxs, host.player_maxs, sizeof( host.player_maxs ));
@@ -493,8 +535,11 @@ void SV_InitClientMove( void )
 	svgame.pmove->PM_TraceLineEx = pfnTraceLineEx;
 	svgame.pmove->PM_TraceSurface = pfnTraceSurface;
 
+
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// initalize pmove
 	svgame.dllFuncs.pfnPM_Init( svgame.pmove );
+#endif
 }
 
 static void PM_CheckMovingGround( edict_t *ent, float frametime )
@@ -936,7 +981,9 @@ void SV_RunCmd( sv_client_t *cl, usercmd_t *ucmd, int random_seed )
 	if( !FBitSet( cl->flags, FCL_FAKECLIENT ))
 		SV_SetupMoveInterpolant( cl );
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	svgame.dllFuncs.pfnCmdStart( cl->edict, ucmd, random_seed );
+#endif
 
 	frametime = ((double)ucmd->msec / 1000.0 );
 	cl->timebase += frametime;
@@ -965,8 +1012,12 @@ void SV_RunCmd( sv_client_t *cl, usercmd_t *ucmd, int random_seed )
 	// setup playermove state
 	SV_SetupPMove( svgame.pmove, cl, ucmd, cl->physinfo );
 
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	// motor!
 	svgame.dllFuncs.pfnPM_Move( svgame.pmove, true );
+#else
+
+#endif
 
 	// copy results back to client
 	SV_FinishPMove( svgame.pmove, cl );
@@ -1005,7 +1056,9 @@ void SV_RunCmd( sv_client_t *cl, usercmd_t *ucmd, int random_seed )
 
 	// run post-think
 	svgame.dllFuncs.pfnPlayerPostThink( clent );
+#if INTERFACE_VERSION == INTERFACE_VERSION_NEW
 	svgame.dllFuncs.pfnCmdEnd( clent );
+#endif
 
 	if( !FBitSet( cl->flags, FCL_FAKECLIENT ))
 	{
