@@ -55,13 +55,22 @@ enum
 //
 // build.c
 //
-int Q_buildnum( void );
 int Q_buildnum_iso( const char *date );
-int Q_buildnum_compat( void );
+
+// to use build information, add "build_vcs" to dependencies
+int Q_buildnum( void );
 extern const char *g_buildcommit;
 extern const char *g_buildbranch;
-extern const char *g_build_date;
 extern const char *g_buildcommit_date;
+
+static inline int Q_buildnum_compat( void )
+{
+	// this magical number below is Xash3D base build number
+	// as Xash3D isn't in development anymore,
+	// it's probably gonna stay at this number forever
+	return 4529;
+}
+
 
 //
 // crtlib.c
@@ -94,9 +103,11 @@ const char *COM_FileWithoutPath( const char *in );
 void COM_StripExtension( char *path );
 void COM_RemoveLineFeed( char *str, size_t bufsize );
 void COM_PathSlashFix( char *path );
-// return 0 on empty or null string, 1 otherwise
-#define COM_CheckString( string ) ( ( !string || !*string ) ? 0 : 1 )
-#define COM_CheckStringEmpty( string ) ( ( !*string ) ? 0 : 1 )
+
+// returns true on empty or NULL string, false otherwise
+#define COM_StringEmpty( string )       (( string )[0] ? false : true )
+#define COM_StringEmptyOrNULL( string ) (( string ) && ( string )[0] ? false : true )
+
 char *COM_ParseFileSafe( char *data, char *token, const int size, unsigned int flags, int *len, qboolean *quoted );
 #define COM_ParseFile( data, token, size ) COM_ParseFileSafe( data, token, size, 0, NULL, NULL )
 int matchpattern( const char *in, const char *pattern, qboolean caseinsensitive );
